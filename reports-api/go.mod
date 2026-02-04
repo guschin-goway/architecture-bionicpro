@@ -12,5 +12,7 @@ require (
 require (
 	github.com/cloudflare/golz4 v0.0.0-20150217214814-ef862a3cdc58 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
+	github.com/jmoiron/sqlx v1.4.0 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
 )

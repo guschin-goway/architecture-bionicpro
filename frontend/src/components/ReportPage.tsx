@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 
-interface ReportRow {
-  report_date: string;
-  prosthesis_id: number;
-  movements_count: number;
-  avg_reaction_time_ms: number;
-  battery_avg_level: number;
-  errors_count: number;
+interface SensorReport {
+  user_id: string;
+  sensor_value: string; // или number, если будете конвертировать
+  ts: string;
+  plan: string;
 }
 
 const ReportPage: React.FC = () => {
   const { keycloak, initialized } = useKeycloak();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [reports, setReports] = useState<ReportRow[]>([]); // <--- state для данных
+  const [reports, setReports] = useState<SensorReport[]>([]);
 
   const downloadReport = async () => {
     if (!keycloak?.token) {
@@ -37,10 +35,15 @@ const ReportPage: React.FC = () => {
         throw new Error(`HTTP error ${response.status}`);
       }
 
-      const data: ReportRow[] = await response.json();
-      setReports(data); // <--- сохраняем данные в state
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error("Данные отсутствуют");
+      }
+
+      setReports(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      setReports([]);
     } finally {
       setLoading(false);
     }
@@ -86,23 +89,19 @@ const ReportPage: React.FC = () => {
               <table className="mt-6 w-full border-collapse border border-gray-300">
                 <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-4 py-2">Date</th>
-                  <th className="border border-gray-300 px-4 py-2">Prosthesis ID</th>
-                  <th className="border border-gray-300 px-4 py-2">Movements</th>
-                  <th className="border border-gray-300 px-4 py-2">Avg Reaction (ms)</th>
-                  <th className="border border-gray-300 px-4 py-2">Battery (%)</th>
-                  <th className="border border-gray-300 px-4 py-2">Errors</th>
+                  <th className="border border-gray-300 px-4 py-2">User ID</th>
+                  <th className="border border-gray-300 px-4 py-2">Sensor Value</th>
+                  <th className="border border-gray-300 px-4 py-2">Timestamp</th>
+                  <th className="border border-gray-300 px-4 py-2">Plan</th>
                 </tr>
                 </thead>
                 <tbody>
                 {reports.map((r, idx) => (
                     <tr key={idx} className="text-center">
-                      <td className="border border-gray-300 px-4 py-2">{r.report_date}</td>
-                      <td className="border border-gray-300 px-4 py-2">{r.prosthesis_id}</td>
-                      <td className="border border-gray-300 px-4 py-2">{r.movements_count}</td>
-                      <td className="border border-gray-300 px-4 py-2">{r.avg_reaction_time_ms}</td>
-                      <td className="border border-gray-300 px-4 py-2">{r.battery_avg_level}</td>
-                      <td className="border border-gray-300 px-4 py-2">{r.errors_count}</td>
+                      <td className="border border-gray-300 px-4 py-2">{r.user_id}</td>
+                      <td className="border border-gray-300 px-4 py-2">{r.sensor_value}</td>
+                      <td className="border border-gray-300 px-4 py-2">{r.ts}</td>
+                      <td className="border border-gray-300 px-4 py-2">{r.plan}</td>
                     </tr>
                 ))}
                 </tbody>
